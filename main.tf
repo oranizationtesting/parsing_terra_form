@@ -556,6 +556,11 @@ resource "aws_security_group" "ecs_service_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   
+module "iam" {
+  source  = "terraform-aws-modules/iam/aws"
+  version = "5.3.2"
+}
+  
 
   tags = merge({ "Name" = "${var.service_name}-sg" }, local.tags)
 }
