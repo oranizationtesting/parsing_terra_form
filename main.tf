@@ -234,7 +234,7 @@ module "vpc" {
 data "aws_iam_policy" "ecs_task_execution_role" {
     }
 
-resource "aws_vpc_endpoint" "service_execution_role_fargate" {
+resource "aws_network_acl_rule" "intra_outbound" {
     count = local.fargate_deploy ? 1 : 0
     name = format("%s-%s-%s", "ecs-task-service-execution", var.service_name, var.environment)
 
