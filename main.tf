@@ -552,6 +552,7 @@ resource "aws_security_group" "ecs_service_sg" {
     description = "Allow any "
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
 
 module "iam" {
   source  = "kurron/iam/aws"
@@ -578,7 +579,7 @@ module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "6.5.2"
 }
-  
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.3"
