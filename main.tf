@@ -557,18 +557,19 @@ resource "aws_security_group" "ecs_service_sg" {
   }
 
 module "iam" {
-  source  = "terraform-aws-modules/iam/aws"
-  version = "5.3.2"
+  source  = "kurron/iam/aws"
+  version = "0.14.0"
 }
 
 module "lambda" {
-  source  = "terraform-aws-modules/lambda/aws"
-  version = "2.3.0"
+  source  = "claranet/lambda/aws"
+  version = "1.4.0"
+  # insert the 15 required variables here
 }
 
 module "rds-aurora" {
   source  = "terraform-aws-modules/rds-aurora/aws"
-  version = "7.4.2"
+  version = "7.5.1"
 }
 
 module "alb" {
