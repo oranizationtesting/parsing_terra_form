@@ -97,7 +97,7 @@ locals {
         discovery_api=data.template_file.container_definition_discovery.rendered
     }
     subnets = {
-      
+
     }
     tags = {
         ApmID           = var.apm_id_tag
@@ -280,7 +280,7 @@ resource "aws_iam_role" "service_role_ec2" {
     "Statement": [
         {
             "Effect": "Allow",
-            "Principal": { "Service": [ 
+            "Principal": { "Service": [
                 "ecs.amazonaws.com" ,
                 "ecs-tasks.amazonaws.com"
                  ] },
@@ -292,7 +292,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "task_role_policy" {
-    count = local.fargate_deploy ? 1 : 0 
+    count = local.fargate_deploy ? 1 : 0
     name = format("%s-%s-%s", "ecs-service", var.service_name, var.environment)
     role = aws_iam_role.task_role_fargate[0].id
 
@@ -323,7 +323,7 @@ resource "aws_iam_role_policy" "task_role_policy" {
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
-                "logs:DescribeLogStreams" 
+                "logs:DescribeLogStreams"
             ],
             "Resource": "*"
         }
@@ -332,7 +332,7 @@ resource "aws_iam_role_policy" "task_role_policy" {
 EOF
 }
 resource "aws_iam_role_policy" "task_role_policy_cloudlog" {
-    count = local.fargate_deploy ? 1 : 0     
+    count = local.fargate_deploy ? 1 : 0
     name = format("%s-%s-%s", "ecs-service", var.service_name, var.environment)
     role = aws_iam_role.service_execution_role_fargate[0].id
 
@@ -345,7 +345,7 @@ resource "aws_iam_role_policy" "task_role_policy_cloudlog" {
             "Action": [
                 "secretsmanager:Describe*",
                 "secretsmanager:Get*",
-                "secretsmanager:List*",                
+                "secretsmanager:List*",
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
@@ -378,7 +378,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 
 
 resource "aws_iam_role_policy" "service_role_policy" {
-    count = local.fargate_deploy ? 0 : 1 
+    count = local.fargate_deploy ? 0 : 1
     name = format("%s-%s-%s", "ecs-service", var.service_name, var.environment)
     role = aws_iam_role.service_role_ec2[0].id
 
@@ -396,7 +396,7 @@ resource "aws_iam_role_policy" "service_role_policy" {
                 "ec2:CreateNetworkInterfacePermission",
                 "ec2:DeleteNetworkInterface",
                 "ec2:DeleteNetworkInterfacePermission",
-                "ec2:DetachNetworkInterface",                
+                "ec2:DetachNetworkInterface",
                 "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
                 "elasticloadbalancing:Describe*",
                 "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
@@ -439,7 +439,7 @@ resource "aws_lb_target_group" "service_target_group" {
         healthy_threshold = 5
         unhealthy_threshold = 2
     }
-    
+
     tags = local.tags
 }
 
@@ -469,8 +469,8 @@ resource "aws_lb_listener_rule" "service_listener_rule_header" {
       values           = ["organization"]
     }
   }
-    
-   
+
+
     action {
         type = "forward"
         target_group_arn = aws_lb_target_group.service_target_group.arn
@@ -521,10 +521,10 @@ resource "aws_ecs_service" "service_fargate" {
     desired_count = var.desired_task_count
     launch_type = "FARGATE"
     propagate_tags = "TASK_DEFINITION"
-    
+
     network_configuration {
       subnets = lookup(local.subnets, var.subnet_type, local.subnets["nonprod-private"])
-      security_groups =   ["${aws_security_group.ecs_service_sg.id}"]    
+      security_groups =   ["${aws_security_group.ecs_service_sg.id}"]
       assign_public_ip=false
     }
 
@@ -540,7 +540,7 @@ resource "aws_ecs_service" "service_fargate" {
 resource "aws_security_group" "ecs_service_sg" {
   name        = "${var.service_name}-sg-${var.environment}"
   description = "Allow access to ECS services for ${var.service_name}"
-  vpc_id      = var.vpc_id  
+  vpc_id      = var.vpc_id
   ingress {
     from_port   =var.container_port
     to_port     = var.container_port
@@ -555,15 +555,32 @@ resource "aws_security_group" "ecs_service_sg" {
     description = "Allow any "
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
 module "iam" {
   source  = "terraform-aws-modules/iam/aws"
   version = "5.3.2"
 }
-  
 
-  tags = merge({ "Name" = "${var.service_name}-sg" }, local.tags)
+module "lambda" {
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "2.3.0"
 }
+
+module "rds-aurora" {
+  source  = "terraform-aws-modules/rds-aurora/aws"
+  version = "7.4.2"
+}
+
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "8.0.0"
+}
+
+module "autoscaling" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "6.5.2"
+}
+
 
 
 resource "aws_ecs_service" "service_ec2" {
