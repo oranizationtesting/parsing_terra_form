@@ -226,10 +226,7 @@ data "template_file" "container_definition_discovery" {
     }
 }
 
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "3.14.3"
-}
+
 
 data "aws_iam_policy" "ecs_task_execution_role" {
     }
@@ -580,6 +577,11 @@ module "alb" {
 module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "6.5.2"
+}
+  
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "3.14.3"
 }
 
 
